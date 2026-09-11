@@ -1,0 +1,228 @@
+/* === ACCESSIBILITY ENHANCEMENTS (ISO 5568/AA COMPLIANT) === */
+
+/* Skip Links & Focus Indicators */
+.skip-link {
+  position: fixed;
+  top: -60px;
+  left: 16px;
+  background: var(--primary);
+  color: var(--text-on-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  z-index: 1000;
+  transition: top 0.3s var(--ease-spring);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 16px;
+  outline: 3px solid var(--danger);
+  outline-offset: 2px;
+}
+
+/* High Contrast & Focus States */
+:focus {
+  outline: 3px solid var(--danger);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Better Focus Management for Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-panel {
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-2xl);
+  padding: 24px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px;
+  border: none;
+  background: var(--bg-inset);
+  border-radius: var(--radius);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+/* Accessibility Control Panel */
+.accessibility-control {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+}
+
+.accessibility-toggle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+}
+
+.accessibility-toggle:hover,
+.accessibility-toggle:focus {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+
+.accessibility-panel {
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-2xl);
+  padding: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  min-width: 280px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+}
+
+.accessibility-panel.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.accessibility-panel h3 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.accessibility-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.accessibility-control-row:last-child {
+  border-bottom: none;
+}
+
+.accessibility-label {
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Focus Mode */
+body.accessibility-mode {
+  user-select: none;
+}
+
+body.accessibility-mode *:focus {
+  outline: 4px solid var(--warning) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Screen Reader Text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Keyboard Navigation Trail */
+.keyboard-navigation-active *:focus {
+  outline: 3px solid var(--warning) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.2) !important;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --bg: #FFFFFF;
+    --text: #000000;
+    --bg-glass: rgba(255, 255, 255, 0.9);
+    --border: #000000;
+  }
+  [data-theme="dark"] {
+    --bg: #000000;
+    --text: #FFFFFF;
+    --bg-glass: rgba(0, 0, 0, 0.9);
+    --border: #FFFFFF;
+  }
+}
+
+/* Magnification Support */
+.magnification-active {
+  transform-origin: top left;
+}
+
+/* Focus Management for Virtual Keyboard */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  position: relative;
+  z-index: 10;
+}
