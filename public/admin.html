@@ -600,6 +600,9 @@
                 <span>🔍</span>
                 <input type="text" id="searchInput" placeholder="חיפוש מקומות...">
             </div>
+            <button class="btn btn-secondary" onclick="loadPlaces(); showToast('מרענן...', 'info')" style="margin-left:8px;">
+                <span>🔄</span> רענון
+            </button>
             <button class="btn btn-primary" onclick="openAddModal()">
                 <span>+</span> הוסף מקום
             </button>
@@ -938,6 +941,51 @@
         
         // Initialize checkbox grids on load
         document.addEventListener('DOMContentLoaded', () => {
+            // ── Login gate ──
+            const loginOverlay = document.getElementById('loginOverlay');
+            const loginForm = document.getElementById('loginForm');
+            const loginInput = document.getElementById('loginTokenInput');
+            const loginError = document.getElementById('loginError');
+            const tokenDisplay = document.getElementById('adminTokenDisplay');
+
+            async function verifyAndLogin(token) {
+                try {
+                    const res = await fetch('/api/places', { headers: { 'X-Admin-Token': token } });
+                    const data = await res.json();
+                    if (data.ok) {
+                        setAdminToken(token);
+                        if (loginOverlay) loginOverlay.style.display = 'none';
+                        if (tokenDisplay) tokenDisplay.textContent = '✅ מחובר';
+                        return true;
+                    }
+                } catch(e) {}
+                return false;
+            }
+
+            const existing = getAdminToken();
+            if (existing) {
+                verifyAndLogin(existing).then(ok => {
+                    if (!ok) { loginOverlay.style.display = ''; setAdminToken(''); }
+                });
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const tok = loginInput.value.trim();
+                    if (!tok) { loginError.textContent = 'הזן טוקן'; loginError.style.display = ''; return; }
+                    loginInput.disabled = true;
+                    loginError.style.display = 'none';
+                    const ok = await verifyAndLogin(tok);
+                    if (!ok) {
+                        loginError.textContent = 'טוקן שגוי או חיבור נכשל';
+                        loginError.style.display = '';
+                        loginInput.disabled = false;
+                        loginInput.select();
+                    }
+                });
+            }
+
             initSocket();
             loadPlaces();
             setupSearch();
@@ -947,7 +995,12 @@
         
         // Socket.IO Connection
         function initSocket() {
-            socket = io({
+                    if (typeof io === 'undefined') {
+                        console.warn('[Admin] Socket.IO not available (static deploy)');
+                        updateConnectionStatus('disconnected');
+                        return;
+                    }
+                    socket = io({
                 transports: ['websocket', 'polling']
             });
             
@@ -1000,26 +1053,7 @@
         // Load Places from API
 
 
-        // Login gate: verify token against /api/places before showing dashboard
-        const loginOverlay = document.getElementById('loginOverlay');
-        const loginForm = document.getElementById('loginForm');
-        const loginInput = document.getElementById('loginTokenInput');
-        const loginError = document.getElementById('loginError');
-        const tokenDisplay = document.getElementById('adminTokenDisplay');
 
-        async function verifyAndLogin(token) {
-            try {
-                const res = await fetch('/api/places', { headers: { 'X-Admin-Token': token } });
-                const data = await res.json();
-                if (data.ok) {
-                    setAdminToken(token);
-                    if (loginOverlay) loginOverlay.style.display = 'none';
-                    if (tokenDisplay) tokenDisplay.textContent = '✅ מחובר';
-                    return true;
-                }
-            } catch(e) {}
-            return false;
-        }
 
         // Check if already logged in (stored token)
         const existing = getAdminToken();
