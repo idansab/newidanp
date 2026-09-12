@@ -568,13 +568,7 @@
     <header class="header">
         <h1>🎯 <span>מה יש פה?</span> - לוח בקרה</h1>
         <div class="header-actions" style="display:flex;align-items:center;gap:10px;">
-            <div class="token-field" style="display:flex;align-items:center;gap:6px;">
-                <label for="adminTokenInput" style="font-size:0.85rem;color:var(--text-secondary);">טוקן:</label>
-                <input type="password" id="adminTokenInput" placeholder="הדבק טוקן כאן"
-                       style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-inset);font-size:0.85rem;width:170px;"
-                       autocomplete="off" aria-label="טוקן ניהול">
-                <button id="adminTokenSave" class="filter-chip" style="padding:6px 10px;font-size:0.85rem;cursor:pointer;">שמור</button>
-            </div>
+            <span id="adminTokenDisplay" style="font-size:0.8rem;color:var(--text-secondary);"></span>
             <div class="connection-status">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">מתחבר...</span>
@@ -1005,14 +999,51 @@
         
         // Load Places from API
 
-        // Token field wiring
-        const tokenInput = document.getElementById('adminTokenInput');
-        const tokenSave = document.getElementById('adminTokenSave');
-        if (tokenInput && tokenSave) {
-            tokenInput.value = getAdminToken();
-            tokenSave.addEventListener('click', () => {
-                setAdminToken(tokenInput.value.trim());
-                showToast(tokenInput.value.trim() ? 'טוקן נשמר' : 'טוקן נוקה', 'success');
+
+        // Login gate: verify token against /api/places before showing dashboard
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const loginInput = document.getElementById('loginTokenInput');
+        const loginError = document.getElementById('loginError');
+        const tokenDisplay = document.getElementById('adminTokenDisplay');
+
+        async function verifyAndLogin(token) {
+            try {
+                const res = await fetch('/api/places', { headers: { 'X-Admin-Token': token } });
+                const data = await res.json();
+                if (data.ok) {
+                    setAdminToken(token);
+                    if (loginOverlay) loginOverlay.style.display = 'none';
+                    if (tokenDisplay) tokenDisplay.textContent = '✅ מחובר';
+                    return true;
+                }
+            } catch(e) {}
+            return false;
+        }
+
+        // Check if already logged in (stored token)
+        const existing = getAdminToken();
+        if (existing) {
+            verifyAndLogin(existing).then(ok => {
+                if (!ok) { loginOverlay.style.display = ''; setAdminToken(''); }
+            });
+        }
+
+        // Handle login form submit
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const tok = loginInput.value.trim();
+                if (!tok) { loginError.textContent = 'הזן טוקן'; loginError.style.display = ''; return; }
+                loginInput.disabled = true;
+                loginError.style.display = 'none';
+                const ok = await verifyAndLogin(tok);
+                if (!ok) {
+                    loginError.textContent = 'טוקן שגוי או חיבור נכשל';
+                    loginError.style.display = '';
+                    loginInput.disabled = false;
+                    loginInput.select();
+                }
             });
         }
 
@@ -1433,5 +1464,23 @@
             if (e.key === 'Escape') closeModal();
         });
     </script>
+
+    <!-- Login Gate -->
+    <div id="loginOverlay" style="position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;align-items:center;justify-content:center;">
+        <div style="max-width:360px;width:90%;text-align:center;padding:40px 24px;border-radius:20px;background:var(--bg-glass-strong);border:1px solid var(--border);box-shadow:0 12px 40px rgba(0,0,0,0.15);">
+            <div style="font-size:3rem;margin-bottom:12px;">🔒</div>
+            <h2 style="margin:0 0 8px;font-size:1.3rem;">כניסת מנהל</h2>
+            <p style="margin:0 0 20px;font-size:0.9rem;color:var(--text-secondary);">הזן את טוקן הניהול שלך כדי לגשת ללוח הבקרה</p>
+            <form id="loginForm" autocomplete="off">
+                <input type="password" id="loginTokenInput" placeholder="טוקן ניהול"
+                       style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--bg-inset);font-size:1rem;margin-bottom:12px;box-sizing:border-box;"
+                       aria-label="טוקן ניהול" autofocus>
+                <button type="submit" style="width:100%;padding:12px;border-radius:12px;border:none;background:var(--primary);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;">
+                    כניסה
+                </button>
+            </form>
+            <div id="loginError" style="margin-top:12px;color:var(--danger);font-size:0.85rem;display:none;"></div>
+        </div>
+    </div>
 </body>
 </html>
