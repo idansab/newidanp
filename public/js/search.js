@@ -22,10 +22,10 @@ const Search = {
       announcement.textContent = `סונן לפי מחיר: ${label}`;
       announcement.setAttribute('aria-live', 'polite');
     }
-    this.apply();
-  },
+    this.apply({ navigate: false });
+      },
 
-  toggleFilter(name, val) {
+      toggleFilter(name, val) {
     this.filters[name] = val;
     // ARIA live update
     const status = document.getElementById('filter-status');
@@ -70,8 +70,12 @@ const Search = {
     }
   },
 
-  apply() {
-    let results = App.state.places.filter(p => {
+  apply(opts) {
+      // opts.navigate === false → render results WITHOUT switching to the results page.
+      // The results page opens ONLY via the explicit "הצג תוצאות" button / App.showResults().
+      const navigate = !opts || opts.navigate !== false;
+
+      let results = App.state.places.filter(p => {
       if (this.filters.category && p.category !== this.filters.category) return false;
       if (this.filters.region && p.region !== this.filters.region) return false;
       if (this.filters.query) {
@@ -95,9 +99,13 @@ const Search = {
     document.getElementById("resultsCount").textContent = `${results.length} מקומות`;
     document.getElementById("resultsList").innerHTML = results.map(App.cardTemplate).join("");
     document.getElementById("emptyResults").style.display = results.length ? "none" : "block";
-    document.getElementById("page-results").classList.add("active");
-    document.getElementById("page-home").classList.remove("active");
-  },
+        // Only switch pages when explicitly requested (showResults button). Otherwise just
+        // refresh the results data so it's ready when the user does open the page.
+        if (navigate) {
+          document.getElementById("page-results").classList.add("active");
+          document.getElementById("page-home").classList.remove("active");
+        }
+      },
 
   categoryLabel(cat) {
     const map = { nature: "טבע", food: "אוכל", culture: "תרבות", sports: "ספורט", family: "משפחה", shopping: "קניות" };

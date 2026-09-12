@@ -22,10 +22,13 @@
 }
 
 /* High Contrast & Focus States */
-:focus {
-  outline: 3px solid var(--danger);
+/* Use :focus-visible only (keyboard activation) — no red ring on every mouse click/tap.
+   The site's main.css already provides a primary-colored :focus-visible; this is a
+   fallback guarantee for keyboard users. */
+:focus-visible {
+  outline: 3px solid var(--primary, #2563EB);
   outline-offset: 2px;
-  box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.2);
 }
 
 /* Reduced Motion Support */

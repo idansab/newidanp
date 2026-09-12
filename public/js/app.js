@@ -64,10 +64,10 @@ const App = {
         .then(data => {
           const validPlaces = (data.places || []).filter(p => p != null && typeof p === 'object');
           this.state.places = validPlaces.map(p => ({ ...p }));
-          this.renderSuggestions();
-          if (typeof Search !== 'undefined' && Search.apply) {
-            Search.apply();
-          }
+                    this.renderSuggestions();
+                    if (typeof Search !== 'undefined' && Search.apply) {
+                      Search.apply({ navigate: false });
+                    }
         })
         .catch(err => {
           console.error('Failed to load places from API, falling back to local data:', err);
@@ -295,9 +295,9 @@ const App = {
       const price = btn.dataset.price;
       Search.filters.price = price;
       const labels = { all: "הכל", free: "חינם", cheap: "₪", medium: "₪₪", expensive: "₪₪₪" };
-      announce("Price type: " + (labels[price] || price));
-      Search.apply();
-    });
+            announce("Price type: " + (labels[price] || price));
+            Search.apply({ navigate: false });
+          });
   });
 
 // Accessibility settings — localStorage sync

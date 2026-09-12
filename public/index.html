@@ -547,8 +547,8 @@
                             App.renderSuggestions();
                             // Also refresh results if on results page
                             if (typeof Search !== 'undefined' && Search.apply) {
-                                Search.apply();
-                            }
+                                                            Search.apply({ navigate: false });
+                                                        }
                         }
                     });
                     socket.on('disconnect', () => {

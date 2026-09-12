@@ -201,7 +201,7 @@ const Settings = {
     if (typeof App !== "undefined") {
       if (App.updateDistances) App.updateDistances();
       if (App.renderSuggestions) App.renderSuggestions();
-      if (typeof Search !== "undefined" && Search.apply) Search.apply();
+      if (typeof Search !== "undefined" && Search.apply) Search.apply({ navigate: false });
     }
   }
 };
