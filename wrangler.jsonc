@@ -1,10 +1,18 @@
 {
   "name": "travidan",
   "compatibility_date": "2024-10-30",
-  "compatibility_flags": ["NODE_COMPAT"],
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/index.js",
+  "kv_namespaces": [
+    {
+      "binding": "PLACES",
+      "id": "f5a1956c4c9f4e4d922e198a31ef6cc4"
+    }
+  ],
   "assets": {
     "directory": "./public",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
   }
 }

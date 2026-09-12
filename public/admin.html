@@ -544,14 +544,41 @@
             .places-grid { grid-template-columns: 1fr; }
         }
     </style>
+
+    <script>
+      // Admin token for protected API calls (stored locally, sent as X-Admin-Token)
+      const ADMIN_TOKEN_KEY = 'adminToken';
+      function getAdminToken() {
+        return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
+      }
+      function setAdminToken(tok) {
+        if (tok) localStorage.setItem(ADMIN_TOKEN_KEY, tok);
+        else localStorage.removeItem(ADMIN_TOKEN_KEY);
+      }
+      function adminHeaders(extra = {}) {
+        const h = { ...extra };
+        const t = getAdminToken();
+        if (t) h['X-Admin-Token'] = t;
+        return h;
+      }
+    </script>
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <h1>🎯 <span>מה יש פה?</span> - לוח בקרה</h1>
-        <div class="connection-status">
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">מתחבר...</span>
+        <div class="header-actions" style="display:flex;align-items:center;gap:10px;">
+            <div class="token-field" style="display:flex;align-items:center;gap:6px;">
+                <label for="adminTokenInput" style="font-size:0.85rem;color:var(--text-secondary);">טוקן:</label>
+                <input type="password" id="adminTokenInput" placeholder="הדבק טוקן כאן"
+                       style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-inset);font-size:0.85rem;width:170px;"
+                       autocomplete="off" aria-label="טוקן ניהול">
+                <button id="adminTokenSave" class="filter-chip" style="padding:6px 10px;font-size:0.85rem;cursor:pointer;">שמור</button>
+            </div>
+            <div class="connection-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">מתחבר...</span>
+            </div>
         </div>
     </header>
     
@@ -977,6 +1004,18 @@
         }
         
         // Load Places from API
+
+        // Token field wiring
+        const tokenInput = document.getElementById('adminTokenInput');
+        const tokenSave = document.getElementById('adminTokenSave');
+        if (tokenInput && tokenSave) {
+            tokenInput.value = getAdminToken();
+            tokenSave.addEventListener('click', () => {
+                setAdminToken(tokenInput.value.trim());
+                showToast(tokenInput.value.trim() ? 'טוקן נשמר' : 'טוקן נוקה', 'success');
+            });
+        }
+
         async function loadPlaces() {
             try {
                 const res = await fetch('/api/places');
@@ -1126,6 +1165,7 @@
             try {
                 const res = await fetch('/api/upload', {
                     method: 'POST',
+                    headers: adminHeaders(),
                     body: formData
                 });
                 
@@ -1312,7 +1352,7 @@
                 
                 const res = await fetch('/api/places', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: adminHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(updatedPlaces)
                 });
                 
@@ -1342,7 +1382,7 @@
                 
                 const res = await fetch('/api/places', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: adminHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(updatedPlaces)
                 });
                 
