@@ -236,8 +236,12 @@ const App = {
             distance: distance
           };
         });
-        // Apply maxDistance radius only when coords exist — otherwise show all
-        sorted = sorted.filter(p => (p.distance ?? 999) <= (Search.filters.maxDistance ?? 999));
+        // Apply maxDistance radius only when coords exist — otherwise show all.
+        // Places WITHOUT coordinates (distance=999) are always shown.
+        sorted = sorted.filter(p => {
+          if (!p.location || typeof p.location.lat !== 'number' || typeof p.location.lng !== 'number') return true;
+          return (p.distance ?? 999) <= (Search.filters.maxDistance ?? 999);
+        });
       }
 
       sorted.sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
