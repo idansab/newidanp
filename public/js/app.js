@@ -343,7 +343,7 @@ const Accessibility = {
   }
 };
 
-// Distance slider — debounced, only updates distanceValue, no page reload
+// Distance slider — debounced, updates distanceValue AND refilters results
 (function() {
   const slider = document.getElementById('distanceSlider');
   const valueDisplay = document.getElementById('distanceValue');
@@ -354,6 +354,11 @@ const Accessibility = {
       debounceDistanceSlider(function() {
         valueDisplay.textContent = val + ' ק"מ';
         try { localStorage.setItem('distanceSlider', val); } catch(e) {}
+        // Update the filter so results actually re-filter by the new radius
+        if (typeof Search !== 'undefined') {
+          Search.filters.maxDistance = parseInt(val, 10) || 30;
+          Search.apply({ navigate: false });
+        }
       }, 500);
     });
   }
