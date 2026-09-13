@@ -991,6 +991,23 @@
             setupSearch();
             setupImageUpload();
             renderCheckboxGrids();
+
+            // Sync image URL field → hidden image field + preview
+            const imgUrlInput = document.getElementById('placeImageUrl');
+            if (imgUrlInput) {
+                imgUrlInput.addEventListener('input', () => {
+                    const v = imgUrlInput.value.trim();
+                    document.getElementById('placeImage').value = v;
+                    const preview = document.getElementById('imagePreview');
+                    if (v) {
+                        preview.src = v;
+                        preview.style.display = 'block';
+                        preview.onerror = () => { preview.style.display = 'none'; };
+                    } else {
+                        preview.style.display = 'none';
+                    }
+                });
+            }
         });
         
         // Socket.IO Connection
