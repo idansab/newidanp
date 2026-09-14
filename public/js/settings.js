@@ -112,9 +112,14 @@ const Settings = {
       waypoint.style.cursor = "pointer";
       waypoint.addEventListener("click", (e) => {
         e.stopPropagation();
-        // Trigger GPS: set location to GPS placeholder and request position
-        this.apply({ location: "מיקום נוכחי (GPS)", radius: this.get().radius ?? this.defaults.radius, dark: this.get().dark ?? this.defaults.dark });
-        if (typeof App !== "undefined" && App.requestLocation) App.requestLocation(true);
+        // Open the settings modal so user can pick a city / use GPS / adjust radius
+        const modal = document.getElementById("settingsModal");
+        if (modal) {
+          modal.classList.add("open");
+          // Focus the city select for immediate keyboard access
+          const loc = document.getElementById("modalLocation");
+          if (loc) loc.focus();
+        }
       });
     }
 

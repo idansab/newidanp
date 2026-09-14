@@ -343,25 +343,46 @@ const Accessibility = {
   }
 };
 
-// Distance slider — debounced, updates distanceValue AND refilters results
+// Distance slider — debounced: updates display, header chip, search filter, and persists
 (function() {
   const slider = document.getElementById('distanceSlider');
   const valueDisplay = document.getElementById('distanceValue');
-  if (slider && valueDisplay) {
-    slider.addEventListener('input', function() {
-      const val = this.value;
-      this.setAttribute('aria-valuenow', val);
-      debounceDistanceSlider(function() {
-        valueDisplay.textContent = val + ' ק"מ';
-        try { localStorage.setItem('distanceSlider', val); } catch(e) {}
-        // Update the filter so results actually re-filter by the new radius
-        if (typeof Search !== 'undefined') {
-          Search.filters.maxDistance = parseInt(val, 10) || 30;
-          Search.apply({ navigate: false });
-        }
-      }, 500);
-    });
-  }
+  if (!slider || !valueDisplay) return;
+
+  slider.addEventListener('input', function() {
+    const val = this.value;
+    this.setAttribute('aria-valuenow', val);
+    debounceDistanceSlider(function() {
+      const km = parseInt(val, 10) || 30;
+
+      // 1. Update the display below the slider
+      valueDisplay.textContent = val + ' ק"מ';
+
+      // 2. Update the header chip (📍 X ק"מ)
+      const headerRadius = document.querySelector('#header-location .radius');
+      if (headerRadius) headerRadius.textContent = km + ' ק"מ';
+
+      // 3. Sync the other sliders (modalRadius, defaultRadius) if they exist
+      const r1 = document.getElementById('defaultRadius');
+      const r2 = document.getElementById('modalRadius');
+      if (r1) r1.value = String(km);
+      if (r2) r2.value = String(km);
+
+      // 4. Persist to localStorage so Settings.apply() picks it up on next load
+      try {
+        const stored = JSON.parse(localStorage.getItem('settings') || '{}');
+        stored.radius = km;
+        localStorage.setItem('settings', JSON.stringify(stored));
+        localStorage.setItem('distanceSlider', String(km));
+      } catch(e) {}
+
+      // 5. Update the search filter and re-render results
+      if (typeof Search !== 'undefined' && Search.filters) {
+        Search.filters.maxDistance = km;
+        Search.apply({ navigate: false });
+      }
+    }, 500);
+  });
 })();
 
 document.addEventListener("DOMContentLoaded", () => App.init());
